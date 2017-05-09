@@ -7,10 +7,10 @@ setup(name='datasciencetools',
       author='James Nix',
       author_email='jnix@garretsongroup.com',
       license='MIT',
-      packages=['datasciencetools', 'sspyrs'],
+      packages=['sspyrs'],
       dependency_links=['https://github.com/requests/requests-ntlm'],
       install_requires=[
-          'pandas>=0.18.1',
-          'pyodbc>=4.0.15'
+           'pandas>=0.18.1',
+           'xmltodict==0.10.2'
       ],
       zip_safe=False)
