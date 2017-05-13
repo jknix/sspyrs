@@ -1,0 +1,8 @@
+setup.py
+sspyrs/__init__.py
+sspyrs.egg-info/PKG-INFO
+sspyrs.egg-info/SOURCES.txt
+sspyrs.egg-info/dependency_links.txt
+sspyrs.egg-info/not-zip-safe
+sspyrs.egg-info/requires.txt
+sspyrs.egg-info/top_level.txt
