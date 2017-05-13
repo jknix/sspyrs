@@ -98,7 +98,7 @@ class report(object):
         pg_xml = xmltodict.parse(pg_txt)
         self.reportname = pg_xml['Report']['@Name']
         self.tables = [x for x in list(pg_xml['Report'].keys()) if
-                       '@' not in x]
+                       '@' not in x and pg_xml['Report'][x] is not None]
         return pg_xml
 
     def tabledata(self):
@@ -117,17 +117,22 @@ class report(object):
         datadict = {}
         for t in xmltables:
             t_group = rawdata['Report'][t]
-            t_details_col = t_group[list(t_group.keys())[0]]
-            t_details = t_details_col[list(t_details_col.keys())[0]]
-            if type(t_details) != list:
-                t_details = [t_details]
-            df = DataFrame.from_records(t_details, columns=t_details[0].keys())
-            df.columns = [x.replace('@', '') for x in df.columns]
-            columnends = [x[-1:] for x in df.columns]
-            if all([x == columnends[0] for x in columnends]):
-                if search('[0-9]', columnends[0]).start() >= 0:
-                    df.columns = [x[:-1] for x in df.columns]
-            datadict[t] = df
+            if t_group is not None:
+                t_details_col = t_group[list(t_group.keys())[0]]
+                t_details = t_details_col[list(t_details_col.keys())[0]]
+                if type(t_details) != list:
+                    t_details = [t_details]
+                df = DataFrame.from_records(t_details, columns=t_details[0].keys())
+                df.columns = [x.replace('@', '') for x in df.columns]
+                columnends = [x[-1:] for x in df.columns]
+                if all([x == columnends[0] for x in columnends]):
+                    if search('[0-9]', columnends[0]).start() >= 0:
+                        df.columns = [x[:-1] for x in df.columns]
+                datadict[t] = df
+            else:
+                import warnings
+                warnings.warn(
+                    'Table ' + t + ' detected with no data, skipping.')
         return datadict
 
     def download(self, exportformat='CSV'):
