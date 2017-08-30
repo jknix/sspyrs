@@ -28,49 +28,76 @@ class report(object):
         else:
             self.parameters = parameters
 
-    def exportlink(self):
-        """Generate a link to a report session
+        def exportlink(link, username, password, parameters):
+            """Generate a link to a report session
 
-        Returns
-        -------
-        str
-            Link with valid session to get the export information.
-        """
-        import re
-        import requests
-        from requests_ntlm import HttpNtlmAuth
+            Returns
+            -------
+            str
+                Link with valid session to get the export information.
+            """
+            import re
+            import requests
+            import warnings
+            from requests_ntlm import HttpNtlmAuth
+            from sys import stderr
 
-        def addparams(link, params):
-            linkstring = link
-            if params is not None:
-                for i in params.keys():
-                    keylabel = i
-                    keyvalue = params[i]
-                    linkstring += '&' + str(keylabel) + '=' + str(keyvalue)
+            def addparams(link, params):
+                linkstring = link
+                if params is not None:
+                    for i in params.keys():
+                        keylabel = i
+                        keyvalue = params[i]
+                        linkstring += '&' + str(keylabel) + '=' + str(keyvalue)
 
-            return linkstring
+                return linkstring
 
-        link_param = addparams(self.link, self.parameters)
+            link_param = addparams(link, parameters)
 
-        linkbase = link_param[:re.search('/Report', link_param).start(0) + 1]
+            linkbase = link_param[
+                       :re.search('/Report', link_param).start(0) + 1]
 
-        session = requests.session()
-        session.auth = HttpNtlmAuth('settlementplan\\' + self.username,
-                                    self.password,
-                                    session)
+            session = requests.session()
+            session.auth = HttpNtlmAuth(username,
+                                        password,
+                                        session)
 
-        pg = session.get(link_param)
-        pg_text = pg.text
-        pg_text_split = pg_text.split('\n')
-        relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
+            pg = session.get(link_param)
+            pg_text = pg.text
+            pg_text_split = pg_text.split('\n')
 
-        linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
-        linkend = re.search('FixedTableId', relpage).start(0) - 3
-        exportlink = relpage[linkstart:linkend]
+            outputs = [s for s in pg_text_split if 'exportReport(' in s]
+            outputs = [s[re.search('exportReport\(\'', s).end():] for s in
+                       outputs]
+            outputs = [s[:re.search('\'', s).start()] for s in outputs]
 
-        newlink = linkbase + exportlink + 'XML'
+            if 'XML' in outputs:
+                relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
+                linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
+                linkend = re.search('FixedTableId', relpage).start(0) - 3
+                exportlink = relpage[linkstart:linkend]
+                newlink = linkbase + exportlink + 'XML'
+                return newlink, outputs
 
-        return newlink
+            elif 'EXCELOPENXML' in outputs:
+                wrnstr = 'No XML export allowed from report server. Use direct excel download function.'
+
+            elif 'CSV' in outputs:
+                wrnstr = 'No XML/Excel export allowed from report server. Use direct csv download function.'
+
+            else:
+                wrnstr = 'Report Server does not allow usable data export methods. Update server settings/version to enable XML, Excel, or CSV export.'
+
+            # warnings.warn(wrnstr, RuntimeWarning)
+            print(wrnstr)
+            return None, outputs
+
+        self.exportlink, self.available_exports = exportlink(self.link,
+                                                             self.username,
+                                                             self.password,
+                                                             self.parameters)
+
+
 
     def rawdata(self):
         """Retrieve raw report XML data as a dictionary
@@ -88,12 +115,16 @@ class report(object):
         from re import search
         from requests_ntlm import HttpNtlmAuth
 
+
+        if self.exportlink is None:
+            raise ValueError('No valid export link available.')
+
         session = requests.session()
-        session.auth = HttpNtlmAuth('settlementplan\\' + self.username,
+        session.auth = HttpNtlmAuth(self.username,
                                     self.password,
                                     session)
 
-        pg = session.get(self.exportlink())
+        pg = session.get(self.exportlink)
         pg_txt = pg.text[search('<', pg.text).start():]
         pg_xml = xmltodict.parse(pg_txt)
         self.reportname = pg_xml['Report']['@Name']
@@ -101,7 +132,7 @@ class report(object):
                        '@' not in x and pg_xml['Report'][x] is not None]
         return pg_xml
 
-    def tabledata(self):
+    def tabledata(self, guessdatatypes=True):
         """Retrieve only table data from XML
 
         Returns
@@ -110,7 +141,7 @@ class report(object):
             Dictionary of pandas DataFrame objects
 
         """
-        from pandas import DataFrame
+        from pandas import DataFrame, to_numeric, to_datetime
         from re import search
         rawdata = self.rawdata()
         xmltables = [x for x in list(rawdata['Report'].keys()) if '@' not in x]
@@ -128,6 +159,15 @@ class report(object):
                 if all([x == columnends[0] for x in columnends]):
                     if search('[0-9]', columnends[0]).start() >= 0:
                         df.columns = [x[:-1] for x in df.columns]
+
+                def guesstype(ser, sample=50):
+                    sersam = ser.sample(min(sample, len(ser)))
+                    if all([len(x) == 19 and x[10] == 'T' for x in sersam]):
+                        return 'date'
+                    else:
+                        return 1
+
+                #todo add float parser
                 datadict[t] = df
             else:
                 import warnings
@@ -135,7 +175,7 @@ class report(object):
                     'Table ' + t + ' detected with no data, skipping.')
         return datadict
 
-    def download(self, exportformat='CSV'):
+    def download(self, exportformat='CSV', path=None):
         """
 
         Parameters
@@ -203,3 +243,7 @@ class report(object):
             writer.save()
 
         return files
+
+
+    def direct(self, type='EXCELOPENXML'):
+        return type
