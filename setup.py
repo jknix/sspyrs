@@ -1,12 +1,12 @@
 from setuptools import setup
 
 setup(name='sspyrs',
-      version='0.1a2',
+      version='0.1a3',
       description='Lightweight interface for SSRS reports to python',
       long_description='',
       url='',
       author='James Nix',
-      author_email='james.k.nix@gmail.com',
+      author_email='james@nixanalytics.com',
       license='MIT',
       packages=['sspyrs'],
       install_requires=[
