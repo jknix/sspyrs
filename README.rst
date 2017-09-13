@@ -28,6 +28,7 @@ Retrieving Data
 ---------------
 
 **Raw XML Data**
+
 To retrieve the raw XML from the report, use the ``rawdata()`` method::
 
     rpt_xml = myrpt.rawdata()
@@ -36,6 +37,7 @@ The resulting variable will be a dictionary with all report data elements includ
 
 
 **Tabular Data**
+
 To quickly organize the raw XML into a tabular format, use the ``tabledata()`` method::
 
     rpt_tables = myrpt.tabledata()
@@ -46,6 +48,7 @@ Exporting Data
 --------------
 
 **Default Download**
+
 When working with versions that allow XML exports, the report data can be directly exported to a few convenient formats using the ``download()`` method::
 
     rpt_downresults = myrpt.download(type='CSV')
@@ -53,4 +56,5 @@ When working with versions that allow XML exports, the report data can be direct
 The resulting variable lists out the data objects which were downloaded and written to files. Currently available exports include CSV, JSON, and Excel. The default download file type is CSV. For CSV and JSON, a file will be created for each data object, named by its dictionary key from the ``tabledata()`` results. For Excel, a single file with multiple tabs is created.
 
 **Direct Download**
+
 When working with versions of SSRS which do not allow XML data exports (typically because the feature is not included in express editions), the data can be exported directly to any of the available export types (on express editions this usually includes Excel, Word, and PDF) using the ``directdown()`` method.
