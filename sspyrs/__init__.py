@@ -245,5 +245,5 @@ class report(object):
         return files
 
 
-    def direct(self, type='EXCELOPENXML'):
+    def directdown(self, type='EXCELOPENXML'):
         return type
