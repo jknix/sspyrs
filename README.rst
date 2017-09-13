@@ -28,22 +28,28 @@ Retrieving Data
 ---------------
 
 **Raw XML Data**
-To retrieve the raw XML from the report, use the ``rawdata()`` method.
-``rpt_xml = myrpt.rawdata()``
+To retrieve the raw XML from the report, use the ``rawdata()`` method::
+
+    rpt_xml = myrpt.rawdata()
+
 The resulting variable will be a dictionary with all report data elements included.
 
 
 **Tabular Data**
-To quickly organize the raw XML into a tabular format, use the ``tabledata()`` method.
-``rpt_tables = myrpt.tabledata()``
+To quickly organize the raw XML into a tabular format, use the ``tabledata()`` method::
+
+    rpt_tables = myrpt.tabledata()
+
 The resulting variable will be a dictionary of Pandas DataFrames, whose keys in the dictionary correspond to the data object names within the .rdl file.
 
 Exporting Data
 --------------
 
 **Default Download**
-When working with versions that allow XML exports, the report data can be directly exported to a few convenient formats using the ``download()`` method.
-``rpt_downresults = myrpt.download(type='CSV')``
+When working with versions that allow XML exports, the report data can be directly exported to a few convenient formats using the ``download()`` method::
+
+    rpt_downresults = myrpt.download(type='CSV')
+
 The resulting variable lists out the data objects which were downloaded and written to files. Currently available exports include CSV, JSON, and Excel. The default download file type is CSV. For CSV and JSON, a file will be created for each data object, named by its dictionary key from the ``tabledata()`` results. For Excel, a single file with multiple tabs is created.
 
 **Direct Download**
