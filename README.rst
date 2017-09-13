@@ -33,7 +33,7 @@ To retrieve the raw XML from the report, use the ``rawdata()`` method::
 
     rpt_xml = myrpt.rawdata()
 
-The resulting variable will be a dictionary with all report data elements included.
+The resulting variable will be a dictionary with all report data elements. This will include some report metadata in addition to the XML formatted data elements from the report. Note that some of the XML tags and headings may appear differently than their corresponding report attributes. This is due to the fact that the XML does not include any XML object labels, only their names, which must be unique across the entire .rdl file, not just within an element. For example, in a report with 2 tables which share column names between them, the first table or data object will have the normal column names appended with an "@" (e.g. "@ID","@Val"), while the second table will have column names like "@ID2", "@Val2". The ``tabledata()`` method strips the "@" and numbers out, but the ``rawdata()`` method leaves them be.
 
 
 **Tabular Data**
@@ -42,7 +42,7 @@ To quickly organize the raw XML into a tabular format, use the ``tabledata()`` m
 
     rpt_tables = myrpt.tabledata()
 
-The resulting variable will be a dictionary of Pandas DataFrames, whose keys in the dictionary correspond to the data object names within the .rdl file.
+The resulting variable will be a dictionary of Pandas DataFrames, whose keys in the dictionary correspond to the data object names within the .rdl file. This method also attempts some limited data parsing for number and date columns.
 
 Exporting Data
 --------------
