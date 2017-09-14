@@ -8,6 +8,10 @@ The SSPYRS library works primarily from the XML export functionality of SSRS. Ho
 
 SSPYRS has been validated to work with SSRS 2008 R2, SSRS 2014, and SSRS 2016 under most server settings.
 
+To install SSPYRS, execute in console::
+
+    pip install sspyrs
+
 
 Usage and Documentation
 =======================
