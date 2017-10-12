@@ -1,0 +1,4 @@
+pandas>=0.18.1
+openpyxl>=2.4.7
+xmltodict>=0.10.2
+requests_ntlm>=1.0.0
