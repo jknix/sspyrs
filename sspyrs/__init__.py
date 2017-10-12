@@ -38,9 +38,8 @@ class report(object):
             """
             import re
             import requests
-            import warnings
             from requests_ntlm import HttpNtlmAuth
-            from sys import stderr
+
 
             def addparams(link, params):
                 linkstring = link
