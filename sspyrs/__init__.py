@@ -39,6 +39,7 @@ class report(object):
             import re
             import requests
             from requests_ntlm import HttpNtlmAuth
+            from xmltodict import parse
 
 
             def addparams(link, params):
@@ -53,8 +54,7 @@ class report(object):
 
             link_param = addparams(link, parameters)
 
-            linkbase = link_param[
-                       :re.search('/Report', link_param).start(0) + 1]
+            linkbase = link_param[:re.search('/report', link_param.lower()).start(0) + 1]
 
             session = requests.session()
             session.auth = HttpNtlmAuth(username,
@@ -65,23 +65,22 @@ class report(object):
             pg_text = pg.text
             pg_text_split = pg_text.split('\n')
 
-            outputs = [s for s in pg_text_split if 'exportReport(' in s]
-            outputs = [s[re.search('exportReport\(\'', s).end():] for s in
-                       outputs]
-            outputs = [s[:re.search('\'', s).start()] for s in outputs]
+            outputs = [s.replace('\t', '') for s in pg_text_split if 'exportReport(' in s]
+            outputs = [parse(s)['a']['#text'] for s in outputs]
 
-            if 'XML' in outputs:
+            if 'XML file with report data' in outputs:
                 relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
+                relpage = relpage.replace('\\u0026', '&')
                 linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
                 linkend = re.search('FixedTableId', relpage).start(0) - 3
                 exportlink = relpage[linkstart:linkend]
                 newlink = linkbase + exportlink + 'XML'
                 return newlink, outputs
 
-            elif 'EXCELOPENXML' in outputs:
+            elif 'Excel' in outputs:
                 wrnstr = 'No XML export allowed from report server. Use direct excel download function.'
 
-            elif 'CSV' in outputs:
+            elif 'CSV (comma delimited)' in outputs:
                 wrnstr = 'No XML/Excel export allowed from report server. Use direct csv download function.'
 
             else:
@@ -161,7 +160,7 @@ class report(object):
 
                 def guesstype(ser, sample=50):
                     sersam = ser.sample(min(sample, len(ser)))
-                    if all([len(x) == 19 and x[10] == 'T' for x in sersam]):
+                    if all([x[5] == '-' and x[10] == 'T' for x in sersam]):
                         return 'date'
                     else:
                         return 1
