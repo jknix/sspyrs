@@ -78,30 +78,17 @@ class report(object):
                 return newlink, outputs
 
             elif 'Excel' in outputs:
-                relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
-                relpage = relpage.replace('\\u0026', '&')
-                linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
-                linkend = re.search('FixedTableId', relpage).start(0) - 3
-                exportlink = relpage[linkstart:linkend]
-                newlink = linkbase + exportlink + 'Excel'
                 wrnstr = 'No XML export allowed from report server. Use direct excel download function.'
 
             elif 'CSV (comma delimited)' in outputs:
-                relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
-                relpage = relpage.replace('\\u0026', '&')
-                linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
-                linkend = re.search('FixedTableId', relpage).start(0) - 3
-                exportlink = relpage[linkstart:linkend]
-                newlink = linkbase + exportlink + 'CSV'
                 wrnstr = 'No XML/Excel export allowed from report server. Use direct csv download function.'
 
             else:
-                newlink = None
                 wrnstr = 'Report Server does not allow usable data export methods. Update server settings/version to enable XML, Excel, or CSV export.'
 
             # warnings.warn(wrnstr, RuntimeWarning)
             print(wrnstr)
-            return newlink, outputs
+            return None, outputs
 
         self.exportlink, self.available_exports = exportlink(self.link,
                                                              self.username,
