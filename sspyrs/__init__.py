@@ -78,17 +78,30 @@ class report(object):
                 return newlink, outputs
 
             elif 'Excel' in outputs:
+                relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
+                relpage = relpage.replace('\\u0026', '&')
+                linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
+                linkend = re.search('FixedTableId', relpage).start(0) - 3
+                exportlink = relpage[linkstart:linkend]
+                newlink = linkbase + exportlink + 'Excel'
                 wrnstr = 'No XML export allowed from report server. Use direct excel download function.'
 
             elif 'CSV (comma delimited)' in outputs:
+                relpage = [s for s in pg_text_split if 'ExportUrlBase' in s][0]
+                relpage = relpage.replace('\\u0026', '&')
+                linkstart = re.search('ExportUrlBase', relpage).start(0) + 17
+                linkend = re.search('FixedTableId', relpage).start(0) - 3
+                exportlink = relpage[linkstart:linkend]
+                newlink = linkbase + exportlink + 'CSV'
                 wrnstr = 'No XML/Excel export allowed from report server. Use direct csv download function.'
 
             else:
+                newlink = None
                 wrnstr = 'Report Server does not allow usable data export methods. Update server settings/version to enable XML, Excel, or CSV export.'
 
             # warnings.warn(wrnstr, RuntimeWarning)
             print(wrnstr)
-            return None, outputs
+            return newlink, outputs
 
         self.exportlink, self.available_exports = exportlink(self.link,
                                                              self.username,
@@ -243,5 +256,45 @@ class report(object):
         return files
 
 
-    def directdown(self, type='EXCELOPENXML'):
-        return type
+    def directdown(self, filename, type='EXCEL'):
+        import requests
+        from requests_ntlm import HttpNtlmAuth
+
+        exportformat = type.upper()
+        allowedformats = ['CSV', 'EXCEL', 'PDF', 'MHTML', 'WORD', 'PPTX', 'IMAGE', 'XML', 'ATOM']
+
+        if exportformat not in allowedformats:
+            raise ValueError('Format not in allowed types.')
+
+        formatdata = {'CSV': {'ext': 'csv', 'exp': 'CSV'},
+                      'EXCEL': {'ext': 'xls', 'exp': 'EXCEL'},
+                      'PDF': {'ext': 'pdf', 'exp': 'PDF'},
+                      'MHTML': {'ext': 'mhtml', 'exp': 'MHTML'},
+                      'WORD': {'ext': 'doc', 'exp': 'WORD'},
+                      'PPTX': {'ext': 'pptx', 'exp': 'PPTX'},
+                      'IMAGE': {'ext': 'tiff', 'exp': 'IMAGE'},
+                      'XML': {'ext': 'xml', 'exp': 'XML'},
+                      'ATOM': {'ext': 'atomsvc', 'exp': 'ATOM'},
+                      }
+
+        downflag = formatdata[exportformat]['exp']
+        extension = formatdata[exportformat]['ext']
+
+        if self.exportlink is None:
+            raise ValueError('No valid export link available.')
+
+        session = requests.session()
+        session.auth = HttpNtlmAuth(self.username,
+                                    self.password,
+                                    session)
+
+        if self.exportlink[-3:] == 'XML':
+            downlink = self.exportlink.replace('XML', '') + downflag
+
+        pg = session.get(downlink)
+        with open(filename + '.' + extension, 'wb') as f:
+            for chunk in pg.iter_content(chunk_size=1024):
+                if chunk:  # filter out keep-alive new chunks
+                    f.write(chunk)
+
+
