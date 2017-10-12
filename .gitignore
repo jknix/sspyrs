@@ -1,2 +1,4 @@
 dist/
 sspyrs.egg-info/
+*.xml
+.idea/
