@@ -255,7 +255,7 @@ class report(object):
 
         formatdata = {'CSV': {'ext': 'csv', 'exp': 'CSV'},
                       'XLS': {'ext': 'xls', 'exp': 'EXCEL'},
-                      'XLSx': {'ext': 'xlsx', 'exp': 'EXCELOPENXML'},
+                      'XLSX': {'ext': 'xlsx', 'exp': 'EXCELOPENXML'},
                       'PDF': {'ext': 'pdf', 'exp': 'PDF'},
                       'MHTML': {'ext': 'mhtml', 'exp': 'MHTML'},
                       'WORD': {'ext': 'doc', 'exp': 'WORD'},
