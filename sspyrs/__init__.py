@@ -248,13 +248,14 @@ class report(object):
         from requests_ntlm import HttpNtlmAuth
 
         exportformat = type.upper()
-        allowedformats = ['CSV', 'EXCEL', 'PDF', 'MHTML', 'WORD', 'PPTX', 'IMAGE', 'XML', 'ATOM']
+        allowedformats = ['CSV', 'XLS', 'XLSX', 'PDF', 'MHTML', 'WORD', 'PPTX', 'IMAGE', 'XML', 'ATOM']
 
         if exportformat not in allowedformats:
             raise ValueError('Format not in allowed types.')
 
         formatdata = {'CSV': {'ext': 'csv', 'exp': 'CSV'},
-                      'EXCEL': {'ext': 'xls', 'exp': 'EXCEL'},
+                      'XLS': {'ext': 'xls', 'exp': 'EXCEL'},
+                      'XLSX': {'ext': 'xlsx', 'exp': 'EXCELOPENXML'},
                       'PDF': {'ext': 'pdf', 'exp': 'PDF'},
                       'MHTML': {'ext': 'mhtml', 'exp': 'MHTML'},
                       'WORD': {'ext': 'doc', 'exp': 'WORD'},
